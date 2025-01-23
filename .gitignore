@@ -1,0 +1,70 @@
+volumes/
+
+# Python bytecode and build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+*.tar
+dist/
+build/
+docker/
+git/
+
+*.safetensors
+
+celerybeat-schedule
+
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+.venv/
+Docker_full
+node_modules/
+
+# Docker-related files
+*.log
+docker-compose.override.yml
+*.pid
+.DS_Store
+
+# MinIO configuration files and credentials
+# minio/
+minio_hot/
+minio_cold/
+minio.env
+volumes/
+recorder_data/
+celerybeat-schedule
+
+# FastAPI auto-generated cache and files
+*cache
+*.log
+*.pid
+*.sqlite
+data/
+
+# Ignore temporary video files
+*.mp4
+*.webp
+temp_video/
+previews/
+video/
+
+# IDE-specific files (e.g., for VSCode)
+.vscode/
+.idea/
+
+# System files
+*.swp
+*~
+Thumbs.db
+.DS_Store

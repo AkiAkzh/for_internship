@@ -1,0 +1,7 @@
+fastapi           
+uvicorn           
+celery            
+pymongo           
+redis             
+python-dotenv 
+eventlet    

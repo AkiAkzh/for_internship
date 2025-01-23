@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api :
+    build : .
+    container_name : fastapi_app
+    ports :
+      - "55010:55010"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - mongodb
+  
+  redis:
+    image: "redis:alpine"
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+
+  mongodb:
+    image: "mongo"
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    
+  worker : 
+    build: .
+    container_name: celery_worker
+    command: ["celery", "-A", "src.tasks", "worker", "-l", "info", "-P", "eventlet"]
+    depends_on:
+      - redis
+      - mongodb
