@@ -1,10 +1,9 @@
 from datetime import datetime
-import logging
 from celery import Celery
-from src.db import mongo_start
+from src.db import get_posts_collection, get_users_collection
 from dotenv import load_dotenv
 from bson import ObjectId
-from .models import UpdateModel
+from .models import PostOutPutModel, UpdateInputModel
 import os
 
 load_dotenv()
@@ -15,7 +14,8 @@ celery_app = Celery(
     backend=os.getenv("REDIS_BACKEND", "redis://localhost:6379/0")
 )
 
-posts_collection = mongo_start()
+posts_collection = get_posts_collection()
+users_collection = get_users_collection()
 
 
 @celery_app.task
@@ -31,9 +31,9 @@ def create_post_task(post_data):
     result = posts_collection.insert_one(post_data)
 
     if result:
-        return {"_id": str(result.inserted_id), "message": "Post created successfully"}
+        return True
     else:
-        return {"message": "Error inserting post"}
+        return False
     # return {"_id": str(result.inserted_id), "message": "Post created asynchronously"}
 
 
@@ -46,8 +46,8 @@ def get_all_post():
     return posts
 
 @celery_app.task
-def find_post_by_title(post_title : str):
-    post = posts_collection.find_one({"title" : post_title})
+def find_post_by_id(post_id):
+    post : PostOutPutModel = posts_collection.find_one({"_id" : ObjectId(post_id)})
     if not post:
         return None  
     post["_id"] = str(post["_id"])  
@@ -56,7 +56,7 @@ def find_post_by_title(post_title : str):
 @celery_app.task
 def update_post_task(post_id, title, content):
     updated_at = datetime.now()
-    post_updated_data = UpdateModel(title=title, content=content, updated_at = updated_at )
+    post_updated_data = UpdateInputModel(title=title, content=content, updated_at = updated_at )
     result = posts_collection.update_one(
         {"_id": ObjectId(post_id)},
         {"$set": post_updated_data.dict()}
@@ -71,3 +71,22 @@ def delete_post_task(post_id):
     if result.deleted_count == 0:
         return {"message": "Post not found"}
     return {"message": "Post deleted successfully"}
+
+@celery_app.task
+def get_user_by_email(email : str):
+    result = users_collection.find_one({"email" : email})
+    if not result : 
+        return None
+    result["_id"] = str(result["_id"])
+    return result
+
+
+@celery_app.task
+def user_create(email : str, username:str,hashed_password : str):
+    result = users_collection.insert_one({"email" : email , "username" : username, "password" : hashed_password})
+    
+    created_user = {
+        "email": email,
+        "_id": str(result.inserted_id)
+    }
+    return created_user
