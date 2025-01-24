@@ -7,14 +7,21 @@ load_dotenv()
 
 MONGO_URI = os.getenv('MONGODB_URI')
 DB_NAME = os.getenv("MY_DB_NAME")
-COLLECTION_NAME = os.getenv("MY_DB_COLLECTION")
+POSTS_COLLECTION = os.getenv("MY_DB_COLLECTION")
+USERS_COLLECTION = os.getenv("MY_DB_USERS_COLLECTION")
 
 
-
-def mongo_start():
+def get_mongo_client():
     try:
-        mongo_client = MongoClient(MONGO_URI)
-        return mongo_client[DB_NAME][COLLECTION_NAME]
+        return MongoClient(MONGO_URI)
     except Exception as e:
         print(f"Error connecting to MongoDB: {e}")
         return None
+
+def get_posts_collection():
+    client = get_mongo_client()
+    return client[DB_NAME][POSTS_COLLECTION] if client else None
+
+def get_users_collection():
+    client = get_mongo_client()
+    return client[DB_NAME][USERS_COLLECTION] if client else None
