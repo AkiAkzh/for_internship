@@ -5,3 +5,6 @@ pymongo
 redis             
 python-dotenv 
 eventlet    
+passlib[bcrypt] 
+python-jose
+pydantic[email]

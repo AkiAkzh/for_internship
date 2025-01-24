@@ -1,4 +1,5 @@
 volumes/
+command.txt
 
 # Python bytecode and build artifacts
 __pycache__/
