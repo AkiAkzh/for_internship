@@ -57,12 +57,11 @@ def find_post_by_id(post_id):
 def update_post_task(post_id, title, content):
     updated_at = datetime.now()
     post_updated_data = UpdateInputModel(title=title, content=content, updated_at = updated_at )
-    result = posts_collection.update_one(
+    posts_collection.update_one(
         {"_id": ObjectId(post_id)},
         {"$set": post_updated_data.dict()}
     )
-    if result.matched_count == 0:
-        return {"message": "Post not found"}
+
     return {"message": "Post updated successfully"}
 
 @celery_app.task

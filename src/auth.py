@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -45,7 +45,13 @@ def create_acces_token(data : dict, expires_delta : timedelta = None):
     return jwt.encode(to_encode, key=secret_key, algorithm=algorithm)
 
 
-@auth_router.post("/register")
+@auth_router.post("/register",
+                  status_code=status.HTTP_201_CREATED,
+                  responses={
+                      201: {"description": "User successfully registered"},
+                      409: {"description": "User with this email already exists"},
+                  })
+
 def registration(user : RegistrationInputModel):
     task = get_user_by_email.apply_async(args=[user.email])
     existing_user = task.get()
@@ -68,10 +74,15 @@ def registration(user : RegistrationInputModel):
     response.headers["Content-Length"] = str(len(response.body))
     return response
 
-@auth_router.post("/login")
+@auth_router.post("/login",
+                  responses={
+                      200: {"description": "Successful login"},
+                      401: {"description": "Invalid credentials"},
+                  })
 def login(user : LoginInputModel):
     task = get_user_by_email.apply_async(args=[user.email])
     existing_user = task.get()
+
     if not user or not verify_password(user.password, existing_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
