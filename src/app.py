@@ -37,18 +37,16 @@ def create_post(new_post : PostInputModel,current_user: str = Depends(get_curren
     post_dict.created_at = datetime.now().isoformat()
     post_dict.updated_at = post_dict.created_at
     
-    post = post_dict.dict()
+    post = post_dict.model_dump()
     task = create_post_task.apply_async(args=[post])
-    result = task.get()
-    if not result :
+    if not task :
         raise HTTPException(status_code=400)
     return post_dict
     
 
 @app.get("/get_posts")
 def get_posts():
-    task = get_all_post.apply_async()
-    result =  task.get()
+    result = get_all_post.apply_async()
     if not result:
         raise HTTPException(status_code=404 , detail="No posts found")
     

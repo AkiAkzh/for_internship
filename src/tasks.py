@@ -59,7 +59,7 @@ def update_post_task(post_id, title, content):
     post_updated_data = UpdateInputModel(title=title, content=content, updated_at = updated_at )
     posts_collection.update_one(
         {"_id": ObjectId(post_id)},
-        {"$set": post_updated_data.dict()}
+        {"$set": post_updated_data.model_dump()}
     )
 
     return {"message": "Post updated successfully"}

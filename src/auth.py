@@ -80,11 +80,21 @@ def registration(user : RegistrationInputModel):
                       401: {"description": "Invalid credentials"},
                   })
 def login(user : LoginInputModel):
-    task = get_user_by_email.apply_async(args=[user.email])
-    existing_user = task.get()
 
-    if not user or not verify_password(user.password, existing_user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    task = get_user_by_email.apply_async(args=[user.email])
+    try:
+        existing_user = task.get(timeout=5)  
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving user: {str(e)}"
+        )
+
+    if not existing_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"A user with the following email address {user.email} does not exist")
+    
+    if not verify_password(user.password, existing_user["password"]):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Wrong password")
     
     access_token = create_acces_token({"sub" : user.email})
     return {"access_token" : access_token ,"token_type": "bearer" }
